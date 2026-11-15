@@ -1,0 +1,53 @@
+/* ==========================================================================
+   ESTILIZANDO A BARRA DE ROLAGEM (AZUL MARINHO & OURO)
+   ========================================================================== */
+
+::-webkit-scrollbar { 
+    width: 7px; 
+}
+
+::-webkit-scrollbar-track { 
+    background: #0f172a; 
+}
+
+::-webkit-scrollbar-thumb { 
+    background: #f59e0b; 
+    border-radius: 4px; 
+}
+
+
+/* ==========================================================================
+   SIMULAÇÃO DE DISPOSITIVOS (MULTICANALIDADE)
+   ========================================================================== */
+
+/* --- MODO TOTEM --- */
+.view-totem {
+    max-width: 500px !important;
+    margin: 0 auto;
+    border: 12px solid #0f172a;
+    border-radius: 36px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45);
+}
+
+.view-totem #products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.view-totem button {
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+}
+
+
+/* --- MODO APLICATIVO CELULAR --- */
+.view-app {
+    max-width: 390px !important;
+    margin: 0 auto;
+    border: 8px solid #1e293b;
+    border-radius: 32px;
+    box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.35);
+}
+
+.view-app #products-grid {
+    grid-template-columns: 1fr !important;
+}
