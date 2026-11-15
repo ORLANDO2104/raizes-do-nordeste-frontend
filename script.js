@@ -190,7 +190,7 @@ function changeUnit(unidade) {
         atualizarInterfaceCarrinho();
         alert(
             "Atenção: O carrinho foi atualizado conforme o cardápio da unidade " + nomeFormatado + ".\n\n" +
-            "Itens indisponíveis removidos:\n• " + itensRemovidos.join("\n• ")
+            "Itens indisponíveis removidos:\n" + itensRemovidos.join("\n")
         );
     }
 
