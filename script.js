@@ -6,6 +6,8 @@ var canalAtual = 'app';
 var unidadeAtual = 'recife';
 var categoriaAtual = 'all';
 var modalidadeEntrega = 'pickup'; // 'pickup' ou 'local'
+var usuarioIdentificado = false;
+var checkoutEmAndamento = false;
 var pontosDoUsuario = 120;
 var descontoAplicado = 0;
 var cupomAtivo = null; // Armazena { codigo, pontos, valor } para estorno se o carrinho cair abaixo do mínimo
@@ -13,63 +15,276 @@ var carrinho = [];
 var statusDoPedidoIndex = 1;
 
 /* ==========================================================================
-   BASE DE DADOS SIMULADA (COM DISPONIBILIDADE POR UNIDADE)
+   BASE DE DADOS SIMULADA (DISPONIBILIDADE POR UNIDADE + ALERGÊNICOS)
    ========================================================================== */
 
 var produtos = [
+    // ================= LANCHES =================
     {
         id: 1,
-        category: 'acaraje',
-        name: 'Acarajé Tradicional Completo',
+        category: 'lanches',
+        name: 'Bolo de Rolo Prensado na Chapa com Queijo Coalho',
         price: 18.90,
-        desc: 'Bolinho de feijão fradinho frito no dendê, vatapá, caruru, camarão seco e salada.',
-        img: '🍤',
-        unidades: ['recife', 'salvador', 'aracaju'] // Indisponível em Maceió (cozinha compacta)
+        desc: 'Fatias tradicionais de bolo de rolo de goiabada, queijo coalho grelhado, manteiga de garrafa e fio de mel de engenho.',
+        img: '🍰',
+        alergenicos: ['Glúten', 'Lactose', 'Ovos'],
+        unidades: ['recife', 'aracaju', 'maceio'] // Indisponível na Unidade Salvador (Barra)
     },
     {
         id: 2,
-        category: 'tapioca',
-        name: 'Tapioca Carne de Sol com Requeijão',
-        price: 16.50,
-        desc: 'Massa artesanal recheada com carne de sol desfiada e requeijão cremoso da terra.',
-        img: '🫓',
+        category: 'lanches',
+        name: 'Sanduíche "Marco Zero" (Carne de Sol na Nata)',
+        price: 32.90,
+        desc: 'Pão brioche artesanal, carne de sol desfiada cremosa na nata, cebola caramelizada na rapadura e queijo manteiga maçaricado.',
+        img: '🍔',
+        alergenicos: ['Glúten', 'Lactose'],
         unidades: ['recife', 'salvador', 'aracaju', 'maceio']
     },
     {
         id: 3,
-        category: 'cuscuz',
-        name: 'Cuscuz Nordestino com Queijo Coalho',
-        price: 14.00,
-        desc: 'Flocada no vapor na cuscuzeira, manteiga de garrafa e queijo coalho tostado.',
-        img: '🌽',
+        category: 'lanches',
+        name: 'Tapioca Crocante de Charque',
+        price: 24.90,
+        desc: 'Goma de tapioca hidratada, crosta externa de queijo coalho tostado, charque dessalgada e desfiada, requeijão cremoso do sertão e cebolinha fresca.',
+        img: '🫓',
+        alergenicos: ['Lactose'],
         unidades: ['recife', 'salvador', 'aracaju', 'maceio']
     },
     {
         id: 4,
-        category: 'bebidas',
-        name: 'Suco Natural de Caju (500ml)',
-        price: 7.50,
-        desc: 'Refrescante e feito com a polpa natural da fruta regional.',
-        img: '🍹',
+        category: 'lanches',
+        name: 'Mini Acarajé no Copo ("Acarajé de Passeio")',
+        price: 26.90,
+        desc: '3 mini bolinhos de feijão-fradinho fritos no azeite de dendê, vatapá tradicional (pão, amendoim, castanha-de-caju e leite de coco), caruru de quiabo, camarão seco defumado, salada vinagrete e molho de pimenta à parte.',
+        img: '🍤',
+        alergenicos: ['Crustáceos', 'Amendoim', 'Castanha', 'Glúten'],
         unidades: ['recife', 'salvador', 'aracaju', 'maceio']
     },
     {
         id: 5,
-        category: 'sobremesas',
-        name: 'Cartola Pernambucana',
-        price: 12.90,
-        desc: 'Banana frita, queijo coalho assado, açúcar e canela polvilhados.',
-        img: '🍌',
-        unidades: ['recife', 'aracaju', 'maceio'] // Especialidade regional
+        category: 'lanches',
+        name: 'Hambúrguer de Moqueca',
+        price: 34.90,
+        desc: 'Pão de leite macio, hambúrguer artesanal de carne de siri e peixe branco (temperado com coentro, leite de coco e toque de dendê), maionese de pimenta-de-cheiro, tomate fatiado e alface americana.',
+        img: '🦀',
+        alergenicos: ['Crustáceos', 'Peixe', 'Glúten', 'Lactose', 'Ovos'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
     },
     {
         id: 6,
-        category: 'acaraje',
-        name: 'Abará na Folha de Bananeira',
-        price: 17.50,
-        desc: 'Cozido no vapor na folha da bananeira com vatapá e camarão.',
-        img: '🍃',
-        unidades: ['salvador', 'aracaju'] // Exclusivo unidades Bahia/Sergipe
+        category: 'lanches',
+        name: 'Tapioca "Porto da Barra"',
+        price: 28.90,
+        desc: 'Goma de tapioca com coco fresco ralado na massa, camarões refogados no azeite doce, tomate-cereja confitado, queijo coalho e coentro picado.',
+        img: '🦐',
+        alergenicos: ['Crustáceos', 'Lactose'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 7,
+        category: 'lanches',
+        name: 'Pastel de Caranguejo com Catupiry',
+        price: 22.90,
+        desc: 'Massa de pastel crocante, carne de caranguejo catado refogada no leite de coco, alho, coentro e pimentões, finalizada com requeijão cremoso tipo Catupiry.',
+        img: '🥟',
+        alergenicos: ['Crustáceos', 'Glúten', 'Lactose'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 8,
+        category: 'lanches',
+        name: 'Cuscuz Recheado no Pote',
+        price: 23.90,
+        desc: 'Flocão de milho cozido no vapor com manteiga de garrafa, carne seca desfiada na cebola roxa, cubos de queijo coalho dourados e banana-da-terra madura frita.',
+        img: '🌽',
+        alergenicos: ['Lactose'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 9,
+        category: 'lanches',
+        name: 'Beiju Molhado de Coco com Queijo',
+        price: 16.90,
+        desc: 'Massa fina de mandioca fresca, leite de coco natural adoçado levemente, coco ralado úmido e fatias de queijo coalho derretido.',
+        img: '🥥',
+        alergenicos: ['Lactose'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 10,
+        category: 'lanches',
+        name: 'Sanduíche de Sururu Cremoso',
+        price: 29.90,
+        desc: 'Baguete francesa crocante, creme encorpado de sururu ao leite de coco, pimentões coloridos, coentro fresco e batata-palha artesanal de macaxeira.',
+        img: '🥖',
+        alergenicos: ['Moluscos', 'Glúten'],
+        unidades: ['recife', 'aracaju', 'maceio'] // Indisponível na Unidade Salvador (Barra)
+    },
+    {
+        id: 11,
+        category: 'lanches',
+        name: 'Coxinha de Macaxeira com Carne de Sol',
+        price: 15.90,
+        desc: 'Massa cremosa de macaxeira cozida, recheio de carne de sol acebolada e queijo coalho derretido, empanada na farinha panko crocante.',
+        img: '🍗',
+        alergenicos: ['Glúten', 'Lactose'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 12,
+        category: 'lanches',
+        name: 'Cartola no Palito',
+        price: 17.90,
+        desc: 'Banana-da-terra madura, fatia generosa de queijo manteiga, massa leve empanada crocante e cobertura de açúcar refinado com canela em pó.',
+        img: '🍌',
+        alergenicos: ['Glúten', 'Lactose'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+
+    // ================= SUCOS =================
+    {
+        id: 13,
+        category: 'sucos',
+        name: 'Suco de Mangaba (400 ml)',
+        price: 13.90,
+        desc: 'Polpa natural de mangaba batida na hora com água mineral gelada (opção com leite: R$ 15,90).',
+        img: '🥤',
+        alergenicos: [],
+        unidades: ['recife', 'aracaju', 'maceio'] // Indisponível na Unidade Salvador (Barra)
+    },
+    {
+        id: 14,
+        category: 'sucos',
+        name: 'Suco de Cajá (400 ml)',
+        price: 12.90,
+        desc: 'Polpa cremosa de cajá fresco batida com água gelada e gelo.',
+        img: '🍹',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 15,
+        category: 'sucos',
+        name: 'Suco de Graviola (400 ml)',
+        price: 14.90,
+        desc: 'Polpa selecionada de graviola batida com água gelada (opção cremosa com leite: R$ 16,90).',
+        img: '🥛',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 16,
+        category: 'sucos',
+        name: 'Suco de Acerola (400 ml)',
+        price: 11.90,
+        desc: 'Polpa fresca de acerola batida na hora com água gelada.',
+        img: '🍒',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 17,
+        category: 'sucos',
+        name: 'Suco de Caju (400 ml)',
+        price: 12.90,
+        desc: 'Polpa natural de caju fresco batida com água gelada e gelo.',
+        img: '🧃',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 18,
+        category: 'sucos',
+        name: 'Suco de Maracujá (400 ml)',
+        price: 13.90,
+        desc: 'Polpa fresca de maracujá batida na hora com água gelada.',
+        img: '🍹',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 19,
+        category: 'sucos',
+        name: 'Suco de Laranja (400 ml)',
+        price: 12.90,
+        desc: 'Suco natural de laranja-pera espremida na hora, servido bem gelado.',
+        img: '🍊',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 20,
+        category: 'sucos',
+        name: 'Suco de Abacaxi (400 ml)',
+        price: 11.90,
+        desc: 'Abacaxi pérola fresco em pedaços batido na hora com água mineral gelada.',
+        img: '🍍',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+
+    // ================= CAFÉS =================
+    {
+        id: 21,
+        category: 'cafes',
+        name: 'Café Coado do Sertão (120 ml)',
+        price: 6.90,
+        desc: 'Café 100% arábica de torra média coado na hora, servido puro (opção com leite vaporizado: R$ 8,90).',
+        img: '☕',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 22,
+        category: 'cafes',
+        name: 'Espresso Rapadura (60 ml)',
+        price: 8.90,
+        desc: 'Dose encorpada de café espresso extraído sobre uma fina raspagem de rapadura artesanal derretida no fundo da xícara.',
+        img: '🤎',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 23,
+        category: 'cafes',
+        name: 'Café Gelado com Leite de Coco (300 ml)',
+        price: 13.90,
+        desc: 'Dose dupla de café espresso batido com gelo, leite de coco fresco e um toque suave de canela — refrescante e pensado especialmente para o clima quente da orla.',
+        img: '🧊',
+        alergenicos: [],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+
+    // ================= SOBREMESAS =================
+    {
+        id: 24,
+        category: 'sobremesas',
+        name: 'Cocada Cremosa de Colher no Potinho',
+        price: 14.90,
+        desc: 'Cocada branca artesanal bem cremosa feita com coco fresco ralado e leite condensado, servida gelada no pote com lascas de coco queimado por cima.',
+        img: '🍮',
+        alergenicos: ['Lactose'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 25,
+        category: 'sobremesas',
+        name: 'Mousse de Maracujá com Calda de Rapadura',
+        price: 15.90,
+        desc: 'Mousse aerado feito com polpa natural de maracujá, finalizado com uma calda rústica de rapadura derretida e sementes crocantes.',
+        img: '🍨',
+        alergenicos: ['Lactose'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
+    },
+    {
+        id: 26,
+        category: 'sobremesas',
+        name: 'Sorvete Artesanal de Tapioca com Mel de Engenho (2 bolas)',
+        price: 17.90,
+        desc: 'Sorvete cremoso feito com tapioca granulada hidratada no leite de coco, servido no copinho com fio de mel de engenho e castanha-de-caju triturada.',
+        img: '🍧',
+        alergenicos: ['Castanha', 'Lactose'],
+        unidades: ['recife', 'salvador', 'aracaju', 'maceio']
     }
 ];
 
@@ -150,7 +365,7 @@ function changeUnit(unidade) {
         recife: 'Recife (Boa Viagem)',
         salvador: 'Salvador (Barra)',
         aracaju: 'Aracaju (Atalaia)',
-        maceio: 'Maceió (Pajuçara - Express)'
+        maceio: 'Maceió (Pajuçara)'
     };
 
     var nomeFormatado = nomes[unidade] || 'Unidade Selecionada';
@@ -159,14 +374,14 @@ function changeUnit(unidade) {
 
     var noticeEl = document.getElementById('unit-menu-notice-text');
     if (noticeEl) {
-        if (unidade === 'maceio') {
-            noticeEl.innerHTML = 'Unidade Express <strong>' + nomeFormatado + '</strong>: alguns itens de fritura não estão disponíveis nesta operação.';
+        if (unidade === 'salvador') {
+            noticeEl.innerHTML = 'Unidade <strong>' + nomeFormatado + '</strong>: 3 itens encontram-se temporariamente indisponíveis no estoque local.';
         } else {
-            noticeEl.innerHTML = 'Exibindo cardápio regional disponível para a unidade <strong>' + nomeFormatado + '</strong>.';
+            noticeEl.innerHTML = 'Exibindo cardápio completo da unidade <strong>' + nomeFormatado + '</strong>.';
         }
     }
 
-    // Validação: remove itens do carrinho que não estão disponíveis na nova unidade selecionada
+    // Validação: remove itens do carrinho que estejam indisponíveis na unidade selecionada
     var itensRemovidos = [];
     for (var i = carrinho.length - 1; i >= 0; i--) {
         var itemCarrinho = carrinho[i];
@@ -189,7 +404,7 @@ function changeUnit(unidade) {
     if (itensRemovidos.length > 0) {
         atualizarInterfaceCarrinho();
         alert(
-            "Atenção: O carrinho foi atualizado conforme o cardápio da unidade " + nomeFormatado + ".\n\n" +
+            "Atenção: O carrinho foi atualizado conforme a disponibilidade da unidade " + nomeFormatado + ".\n\n" +
             "Itens indisponíveis removidos:\n" + itensRemovidos.join("\n")
         );
     }
@@ -213,7 +428,7 @@ function showTab(nomeDaAba) {
 }
 
 /* ==========================================================================
-   CARDÁPIO E FILTROS DINÂMICOS (POR UNIDADE E CATEGORIA)
+   CARDÁPIO, ALERGÊNICOS E FILTROS DINÂMICOS
    ========================================================================== */
 
 function filtrarERenderizarCardapio() {
@@ -226,6 +441,20 @@ function filtrarERenderizarCardapio() {
         }
     }
     renderizarProdutos(filtrados);
+}
+
+function obterIconeAlergenico(alergeno) {
+    var mapaIcones = {
+        'Crustáceos': '🦐',
+        'Moluscos': '🐚',
+        'Peixe': '🐟',
+        'Amendoim': '🥜',
+        'Castanha': '🌰',
+        'Glúten': '🌾',
+        'Lactose': '🥛',
+        'Ovos': '🥚'
+    };
+    return mapaIcones[alergeno] || '⚠️';
 }
 
 function renderizarProdutos(lista) {
@@ -246,16 +475,31 @@ function renderizarProdutos(lista) {
                   'Indisponível nesta loja' +
               '</span>';
 
+        // Monta as tags de alergênicos logo abaixo da descrição
+        var alergenicosHtml = '';
+        if (p.alergenicos && p.alergenicos.length > 0) {
+            alergenicosHtml += '<div class="flex flex-wrap gap-1 pt-1.5" title="Contém ingredientes alergênicos">';
+            for (var a = 0; a < p.alergenicos.length; a++) {
+                var alergeno = p.alergenicos[a];
+                alergenicosHtml += '<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-900 border border-amber-300/80 text-[10px] font-semibold px-1.5 py-0.5 rounded-md">' +
+                                        '<span>' + obterIconeAlergenico(alergeno) + '</span>' +
+                                        '<span>' + alergeno + '</span>' +
+                                   '</span>';
+            }
+            alergenicosHtml += '</div>';
+        }
+
         var cardOpacidade = disponivelNaUnidade ? 'bg-white border-slate-200' : 'bg-slate-50 border-slate-200 opacity-75';
 
         html += '<div class="' + cardOpacidade + ' rounded-xl border p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-3">' +
                     '<div class="space-y-2">' +
-                        '<div class="w-full h-28 bg-slate-100 rounded-lg flex items-center justify-center text-4xl shadow-inner relative">' +
+                        '<div class="w-full h-24 bg-gradient-to-br from-amber-50 to-slate-100 rounded-lg flex items-center justify-center text-4xl shadow-inner relative border border-slate-200/60">' +
                             p.img +
-                            (!disponivelNaUnidade ? '<span class="absolute top-2 right-2 bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Fora do cardápio local</span>' : '') +
+                            (!disponivelNaUnidade ? '<span class="absolute top-2 right-2 bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Indisponível nesta unidade</span>' : '') +
                         '</div>' +
-                        '<h4 class="font-bold text-sm text-gray-800">' + p.name + '</h4>' +
-                        '<p class="text-xs text-gray-500 leading-snug">' + p.desc + '</p>' +
+                        '<h4 class="font-bold text-sm text-gray-800 leading-snug">' + p.name + '</h4>' +
+                        '<p class="text-xs text-gray-500 leading-relaxed">' + p.desc + '</p>' +
+                        alergenicosHtml +
                     '</div>' +
                     '<div class="flex items-center justify-between pt-2 border-t border-gray-100">' +
                         '<span class="font-extrabold text-sm text-blue-900">R$ ' + preco + '</span>' +
@@ -280,7 +524,7 @@ function filterCategory(categoria, btnElement) {
         btnElement.className = "cat-btn bg-blue-900 text-white font-bold px-4 py-1.5 rounded-full text-xs whitespace-nowrap shadow-sm border border-blue-950 transition";
     }
 
-    // 3. Filtra respeitando a unidade e a categoria selecionada
+    // 3. Filtra respeitando a categoria selecionada
     filtrarERenderizarCardapio();
 }
 
@@ -432,7 +676,7 @@ function toggleCartModal() {
 }
 
 /* ==========================================================================
-   VERIFICAÇÃO LGPD E ATUALIZAÇÃO DOS BOTÕES DE RECOMPENSA
+   VERIFICAÇÃO LGPD, IDENTIFICAÇÃO E ATUALIZAÇÃO DOS BOTÕES DE RECOMPENSA
    ========================================================================== */
 
 function isFidelidadePermitidaLGPD() {
@@ -442,6 +686,16 @@ function isFidelidadePermitidaLGPD() {
 
 function atualizarBotoesRecompensas() {
     var fidelidadeAtiva = isFidelidadePermitidaLGPD();
+
+    var idWarningEl = document.getElementById('fidelity-id-warning');
+    if (idWarningEl) {
+        if (usuarioIdentificado) {
+            idWarningEl.classList.add('hidden');
+        } else {
+            idWarningEl.classList.remove('hidden');
+        }
+    }
+
     var warningEl = document.getElementById('fidelity-lgpd-warning');
     if (warningEl) {
         if (fidelidadeAtiva) {
@@ -459,10 +713,14 @@ function atualizarBotoesRecompensas() {
     var estiloAtivo = "mt-4 bg-blue-900 hover:bg-slate-900 text-white py-2 rounded-lg text-xs font-bold transition cursor-pointer";
     var estiloInativo = "mt-4 bg-gray-200 text-gray-500 py-2 rounded-lg text-xs font-bold cursor-not-allowed";
 
-    // Card 1: R$ 10,00 (Requer LGPD ativa, 100 Pts E subtotal >= R$ 30,00)
+    // Card 1: R$ 10,00 (Requer Usuário Identificado, LGPD ativa, 100 Pts E subtotal >= R$ 30,00)
     var btnR10 = document.getElementById('btn-reward-r10');
     if (btnR10) {
-        if (!fidelidadeAtiva) {
+        if (!usuarioIdentificado) {
+            btnR10.className = estiloInativo;
+            btnR10.innerText = "Identifique-se (LGPD)";
+            btnR10.disabled = true;
+        } else if (!fidelidadeAtiva) {
             btnR10.className = estiloInativo;
             btnR10.innerText = "Bloqueado (LGPD)";
             btnR10.disabled = true;
@@ -477,10 +735,14 @@ function atualizarBotoesRecompensas() {
         }
     }
 
-    // Card 2: Cocada Cremosa (Requer LGPD ativa e 150 Pts)
+    // Card 2: Cocada Cremosa (Requer Usuário Identificado, LGPD ativa e 150 Pts)
     var btnCocada = document.getElementById('btn-reward-cocada');
     if (btnCocada) {
-        if (!fidelidadeAtiva) {
+        if (!usuarioIdentificado) {
+            btnCocada.className = estiloInativo;
+            btnCocada.innerText = "Identifique-se (LGPD)";
+            btnCocada.disabled = true;
+        } else if (!fidelidadeAtiva) {
             btnCocada.className = estiloInativo;
             btnCocada.innerText = "Bloqueado (LGPD)";
             btnCocada.disabled = true;
@@ -495,10 +757,14 @@ function atualizarBotoesRecompensas() {
         }
     }
 
-    // Card 3: R$ 25,00 (Requer LGPD ativa, 220 Pts E subtotal >= R$ 50,00)
+    // Card 3: R$ 25,00 (Requer Usuário Identificado, LGPD ativa, 220 Pts E subtotal >= R$ 50,00)
     var btnR25 = document.getElementById('btn-reward-r25');
     if (btnR25) {
-        if (!fidelidadeAtiva) {
+        if (!usuarioIdentificado) {
+            btnR25.className = estiloInativo;
+            btnR25.innerText = "Identifique-se (LGPD)";
+            btnR25.disabled = true;
+        } else if (!fidelidadeAtiva) {
             btnR25.className = estiloInativo;
             btnR25.innerText = "Bloqueado (LGPD)";
             btnR25.disabled = true;
@@ -519,6 +785,12 @@ function atualizarBotoesRecompensas() {
    ========================================================================== */
 
 function redeemReward(codigoCupom, custoEmPontos, valorDoDesconto) {
+    if (!usuarioIdentificado) {
+        alert("Para resgatar pontos de fidelidade, realize sua identificação com aceite da LGPD.");
+        toggleModal('user-modal');
+        return;
+    }
+
     if (!isFidelidadePermitidaLGPD()) {
         alert("O resgate está desativado devido à sua preferência de privacidade (LGPD). Ative o Programa de Fidelidade nas configurações de privacidade.");
         return;
@@ -584,7 +856,7 @@ function redeemReward(codigoCupom, custoEmPontos, valorDoDesconto) {
 }
 
 /* ==========================================================================
-   PAGAMENTO, SIMULAÇÃO DE FALHA E PONTUAÇÃO LGPD
+   ETAPA 6 (DECISÃO DE IDENTIFICAÇÃO), PAGAMENTO E PONTUAÇÃO LGPD
    ========================================================================== */
 
 function startCheckout() {
@@ -592,12 +864,37 @@ function startCheckout() {
         alert('Adicione ao menos um item ao carrinho.');
         return;
     }
-    // Esconde alerta de erro anterior ao abrir o modal de pagamento
+    // Esconde alerta de erro anterior ao iniciar o checkout
     var errAlert = document.getElementById('payment-error-alert');
     if (errAlert) errAlert.classList.add('hidden');
 
     toggleCartModal();
-    toggleModal('payment-modal');
+
+    // Verifica se o usuário deseja se identificar antes do pagamento
+    if (!usuarioIdentificado) {
+        checkoutEmAndamento = true;
+        toggleModal('id-decision-modal');
+    } else {
+        toggleModal('payment-modal');
+    }
+}
+
+function chooseIdentificationOption(desejaIdentificar) {
+    toggleModal('id-decision-modal');
+
+    if (desejaIdentificar) {
+        // Abre cadastro/login vinculado ao aceite da LGPD
+        toggleModal('user-modal');
+    } else {
+        // Prossegue como convidado sem pontuação
+        checkoutEmAndamento = false;
+        toggleModal('payment-modal');
+    }
+}
+
+function cancelIdDecision() {
+    checkoutEmAndamento = false;
+    toggleModal('id-decision-modal');
 }
 
 function selectPayMethod(metodo) {
@@ -658,9 +955,10 @@ function processSimulatedPayment() {
         toggleModal('payment-modal');
         
         var fidelidadeAtiva = isFidelidadePermitidaLGPD();
+        var podePontuar = usuarioIdentificado && fidelidadeAtiva;
         var pontosGanhos = 0;
 
-        if (fidelidadeAtiva) {
+        if (podePontuar) {
             var subtotalBruto = 0;
             var bonusCombo = 0;
 
@@ -693,8 +991,10 @@ function processSimulatedPayment() {
 
         showTab('track');
 
-        if (fidelidadeAtiva) {
+        if (podePontuar) {
             alert("Pagamento aprovado! Você ganhou +" + pontosGanhos + " pontos Raízes.");
+        } else if (!usuarioIdentificado) {
+            alert("Pagamento aprovado como Convidado! Nenhuma pontuação de fidelidade foi acumulada.");
         } else {
             alert("Pagamento aprovado! Observação: O acúmulo de pontos está desativado conforme sua preferência de privacidade (LGPD).");
         }
@@ -759,13 +1059,26 @@ function loginUser() {
     }
 
     if (input.value.trim() !== "") {
+        usuarioIdentificado = true;
         var primeiroNome = input.value.trim().split(' ')[0];
         var display = document.getElementById('user-name-display');
         if (display) display.innerText = primeiroNome;
         toggleModal('user-modal');
+        atualizarBotoesRecompensas();
+
+        // Se o cadastro/login foi acionado antes do pagamento, prossegue automaticamente para o gateway
+        if (checkoutEmAndamento) {
+            checkoutEmAndamento = false;
+            toggleModal('payment-modal');
+        }
     } else {
         alert("Por favor, informe seu nome completo.");
     }
+}
+
+function closeUserModal() {
+    checkoutEmAndamento = false;
+    toggleModal('user-modal');
 }
 
 function toggleModal(id) {

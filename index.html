@@ -75,7 +75,7 @@
                             <option value="recife" class="text-gray-900">Unidade Recife (Boa Viagem)</option>
                             <option value="salvador" class="text-gray-900">Unidade Salvador (Barra)</option>
                             <option value="aracaju" class="text-gray-900">Unidade Aracaju (Atalaia)</option>
-                            <option value="maceio" class="text-gray-900">Unidade Maceió (Pajuçara - Express)</option>
+                            <option value="maceio" class="text-gray-900">Unidade Maceió (Pajuçara)</option>
                         </select>
                     </p>
                 </div>
@@ -141,10 +141,9 @@
                 <!-- Filtro de categorias -->
                 <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
                     <button onclick="filterCategory('all', this)" class="cat-btn bg-blue-900 text-white font-bold px-4 py-1.5 rounded-full text-xs whitespace-nowrap shadow-sm border border-blue-950 transition">Todos</button>
-                    <button onclick="filterCategory('acaraje', this)" class="cat-btn bg-white text-gray-700 hover:bg-slate-100 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 transition">Acarajés</button>
-                    <button onclick="filterCategory('tapioca', this)" class="cat-btn bg-white text-gray-700 hover:bg-slate-100 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 transition">Tapiocas</button>
-                    <button onclick="filterCategory('cuscuz', this)" class="cat-btn bg-white text-gray-700 hover:bg-slate-100 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 transition">Cuscuz Recheado</button>
-                    <button onclick="filterCategory('bebidas', this)" class="cat-btn bg-white text-gray-700 hover:bg-slate-100 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 transition">Bebidas Típicas</button>
+                    <button onclick="filterCategory('lanches', this)" class="cat-btn bg-white text-gray-700 hover:bg-slate-100 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 transition">Lanches</button>
+                    <button onclick="filterCategory('sucos', this)" class="cat-btn bg-white text-gray-700 hover:bg-slate-100 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 transition">Sucos</button>
+                    <button onclick="filterCategory('cafes', this)" class="cat-btn bg-white text-gray-700 hover:bg-slate-100 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 transition">Cafés</button>
                     <button onclick="filterCategory('sobremesas', this)" class="cat-btn bg-white text-gray-700 hover:bg-slate-100 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-slate-200 transition">Sobremesas</button>
                 </div>
 
@@ -156,6 +155,15 @@
 
             <!-- Secção Fidelidade -->
             <section id="section-fidelity" class="hidden space-y-6">
+                <!-- Alerta caso usuário não esteja identificado -->
+                <div id="fidelity-id-warning" class="bg-amber-50 border border-amber-300 text-amber-950 p-4 rounded-xl text-xs flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-user-lock text-amber-700 text-base"></i>
+                        <span>Identifique-se com aceite da <strong>LGPD</strong> para habilitar o acúmulo e o resgate de pontos de fidelidade.</span>
+                    </div>
+                    <button onclick="toggleModal('user-modal')" class="bg-blue-900 text-white px-3 py-1.5 rounded-lg font-bold whitespace-nowrap hover:bg-slate-900">Identificar-se</button>
+                </div>
+
                 <!-- Alerta caso fidelidade LGPD esteja desativada -->
                 <div id="fidelity-lgpd-warning" class="hidden bg-red-50 border border-red-200 text-red-900 p-4 rounded-xl text-xs flex items-center justify-between gap-3">
                     <div class="flex items-center gap-2">
@@ -394,6 +402,30 @@
         </div>
     </div>
 
+    <!-- Modal Decisão de Identificação (Etapa 6 da Jornada do Usuário) -->
+    <div id="id-decision-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <button onclick="cancelIdDecision()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div class="text-center space-y-1">
+                <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Programa de Fidelidade & LGPD</span>
+                <h3 class="text-lg font-black text-gray-800 mt-1">Deseja se identificar antes de pagar?</h3>
+                <p class="text-xs text-gray-500">Clientes identificados com aceite da LGPD habilitam o acúmulo e o resgate de pontos de fidelidade.</p>
+            </div>
+
+            <div class="space-y-2.5 pt-2">
+                <button onclick="chooseIdentificationOption(true)" class="w-full bg-blue-900 hover:bg-slate-900 text-white py-3 px-4 rounded-xl font-bold text-xs shadow transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-user-check text-amber-400"></i>
+                    <span>Sim, quero me identificar (Cadastro / Login LGPD)</span>
+                </button>
+                <button onclick="chooseIdentificationOption(false)" class="w-full bg-slate-100 hover:bg-slate-200 text-gray-700 border border-slate-300 py-2.5 px-4 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-user-secret"></i>
+                    <span>Não, prosseguir como Convidado (Sem Pontuação)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Pagamento -->
     <div id="payment-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
@@ -447,7 +479,7 @@
     <!-- Modal Utilizador -->
     <div id="user-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl relative">
-            <button onclick="toggleModal('user-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="closeUserModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
             
             <h3 class="font-bold text-base text-gray-800 text-center">Identificação do Cliente</h3>
             
