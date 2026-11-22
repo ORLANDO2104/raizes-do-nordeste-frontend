@@ -267,7 +267,7 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-500">Modalidade de Entrega:</span>
-                            <span class="font-bold text-emerald-700" id="order-pickup-display">Retirada Rápida (Pick-up Balcão)</span>
+                            <span class="font-bold text-emerald-700" id="order-pickup-display">Retirada Balcão</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-500">Unidade:</span>
@@ -366,12 +366,12 @@
             </div>
 
             <div class="p-4 border-t bg-slate-50 space-y-3">
-                <!-- Seleção de Modalidade (Pick-up vs Consumo no Local) -->
+                <!-- Seleção de Modalidade (Retirada Balcão vs Consumo no Local) -->
                 <div class="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1.5">
                     <span class="text-[11px] font-bold text-gray-700 block">Modalidade de Atendimento:</span>
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <button type="button" onclick="selectDeliveryMode('pickup')" id="btn-mode-pickup" class="py-1.5 px-2 rounded-lg border-2 border-blue-900 bg-blue-50 text-blue-950 font-bold flex items-center justify-center gap-1 transition">
-                            <i class="fa-solid fa-person-walking"></i> Pick-up Balcão
+                            <i class="fa-solid fa-person-walking"></i> Retirada Balcão
                         </button>
                         <button type="button" onclick="selectDeliveryMode('local')" id="btn-mode-local" class="py-1.5 px-2 rounded-lg border border-gray-200 bg-white text-gray-600 font-semibold flex items-center justify-center gap-1 transition">
                             <i class="fa-solid fa-utensils"></i> Consumo Local
@@ -486,11 +486,11 @@
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-medium text-gray-700 mb-1">Nome Completo</label>
-                    <input type="text" id="input-user-name" value="Maria da Silva" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-blue-900 outline-none">
+                    <input type="text" id="input-user-name" placeholder="Digite seu nome completo" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-blue-900 outline-none">
                 </div>
                 <div>
                     <label class="block font-medium text-gray-700 mb-1">Telefone (WhatsApp)</label>
-                    <input type="text" value="(81) 99876-5432" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-blue-900 outline-none">
+                    <input type="text" id="input-user-phone" placeholder="(00) 00000-0000" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-blue-900 outline-none">
                 </div>
                 <label class="flex items-start gap-2 pt-1 text-[11px] text-gray-600 cursor-pointer">
                     <input type="checkbox" id="input-user-lgpd" checked class="mt-0.5 accent-blue-900">

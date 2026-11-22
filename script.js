@@ -300,7 +300,7 @@ window.onload = function() {
 };
 
 /* ==========================================================================
-   MUDANÇA DE MODO, MODALIDADE PICK-UP E UNIDADE
+   MUDANÇA DE MODO, MODALIDADE RETIRADA BALCÃO E UNIDADE
    ========================================================================== */
 
 function setViewMode(modo) {
@@ -351,7 +351,7 @@ function atualizarResumoEntregaPedido() {
     var etaDisplay = document.getElementById('order-eta-display');
 
     if (modalidadeEntrega === 'pickup') {
-        if (pickupDisplay) pickupDisplay.innerText = "Retirada Rápida (Pick-up Balcão)";
+        if (pickupDisplay) pickupDisplay.innerText = "Retirada Balcão";
         if (etaDisplay) etaDisplay.innerText = "8 a 12 minutos (Via Expressa)";
     } else {
         if (pickupDisplay) pickupDisplay.innerText = "Consumo no Salão / Mesa";
