@@ -418,13 +418,25 @@ function showTab(nomeDaAba) {
         var sec = document.getElementById("section-" + abas[i]);
         if (sec) sec.classList.add('hidden');
         var btn = document.getElementById("tab-" + abas[i]);
-        if (btn) btn.className = "px-4 py-2 font-semibold text-sm border-b-2 border-transparent text-gray-600 hover:text-blue-900 transition flex items-center gap-2 whitespace-nowrap";
+        if (btn) {
+            btn.className = "px-4 py-2.5 font-semibold text-xs md:text-sm border-b-2 border-transparent text-gray-600 hover:text-blue-900 transition flex items-center gap-2 whitespace-nowrap";
+            var badgeNum = btn.querySelector('span:first-child');
+            if (badgeNum) {
+                badgeNum.className = "w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[11px] font-extrabold flex items-center justify-center";
+            }
+        }
     }
 
     var secAtiva = document.getElementById("section-" + nomeDaAba);
     if (secAtiva) secAtiva.classList.remove('hidden');
     var btnAtivo = document.getElementById("tab-" + nomeDaAba);
-    if (btnAtivo) btnAtivo.className = "px-4 py-2 font-bold text-sm border-b-2 border-blue-900 text-blue-900 transition flex items-center gap-2 whitespace-nowrap";
+    if (btnAtivo) {
+        btnAtivo.className = "px-4 py-2.5 font-bold text-xs md:text-sm border-b-2 border-blue-900 text-blue-900 transition flex items-center gap-2 whitespace-nowrap";
+        var badgeAtivo = btnAtivo.querySelector('span:first-child');
+        if (badgeAtivo) {
+            badgeAtivo.className = "w-5 h-5 rounded-full bg-blue-900 text-white text-[11px] font-extrabold flex items-center justify-center";
+        }
+    }
 }
 
 /* ==========================================================================

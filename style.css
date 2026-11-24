@@ -24,7 +24,7 @@
 /* --- MODO TOTEM --- */
 .view-totem {
     max-width: 500px !important;
-    margin: 0 auto;
+    margin: 1rem auto;
     border: 12px solid #0f172a;
     border-radius: 36px;
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45);
@@ -43,7 +43,7 @@
 /* --- MODO APLICATIVO CELULAR --- */
 .view-app {
     max-width: 390px !important;
-    margin: 0 auto;
+    margin: 1rem auto;
     border: 8px solid #1e293b;
     border-radius: 32px;
     box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.35);
