@@ -289,10 +289,20 @@ var produtos = [
 ];
 
 /* ==========================================================================
-   INICIALIZAÇÃO
+   INICIALIZAÇÃO E POSICIONAMENTO FIXO DO CABEÇALHO
    ========================================================================== */
 
+function ajustarTopoNavbar() {
+    var topHeader = document.getElementById('top-header');
+    if (topHeader) {
+        document.documentElement.style.setProperty('--header-height', topHeader.offsetHeight + 'px');
+    }
+}
+
+window.addEventListener('resize', ajustarTopoNavbar);
+
 window.onload = function() {
+    ajustarTopoNavbar();
     setViewMode('app');
     filtrarERenderizarCardapio();
     atualizarInterfaceCarrinho();
@@ -328,6 +338,8 @@ function setViewMode(modo) {
 
     var orderChannel = document.getElementById('order-channel-display');
     if (orderChannel) orderChannel.innerText = modo.toUpperCase();
+
+    ajustarTopoNavbar();
 }
 
 function selectDeliveryMode(modo) {
@@ -418,25 +430,13 @@ function showTab(nomeDaAba) {
         var sec = document.getElementById("section-" + abas[i]);
         if (sec) sec.classList.add('hidden');
         var btn = document.getElementById("tab-" + abas[i]);
-        if (btn) {
-            btn.className = "px-4 py-2.5 font-semibold text-xs md:text-sm border-b-2 border-transparent text-gray-600 hover:text-blue-900 transition flex items-center gap-2 whitespace-nowrap";
-            var badgeNum = btn.querySelector('span:first-child');
-            if (badgeNum) {
-                badgeNum.className = "w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[11px] font-extrabold flex items-center justify-center";
-            }
-        }
+        if (btn) btn.className = "px-4 py-2 font-semibold text-sm border-b-2 border-transparent text-gray-600 hover:text-blue-900 transition flex items-center gap-2 whitespace-nowrap";
     }
 
     var secAtiva = document.getElementById("section-" + nomeDaAba);
     if (secAtiva) secAtiva.classList.remove('hidden');
     var btnAtivo = document.getElementById("tab-" + nomeDaAba);
-    if (btnAtivo) {
-        btnAtivo.className = "px-4 py-2.5 font-bold text-xs md:text-sm border-b-2 border-blue-900 text-blue-900 transition flex items-center gap-2 whitespace-nowrap";
-        var badgeAtivo = btnAtivo.querySelector('span:first-child');
-        if (badgeAtivo) {
-            badgeAtivo.className = "w-5 h-5 rounded-full bg-blue-900 text-white text-[11px] font-extrabold flex items-center justify-center";
-        }
-    }
+    if (btnAtivo) btnAtivo.className = "px-4 py-2 font-bold text-sm border-b-2 border-blue-900 text-blue-900 transition flex items-center gap-2 whitespace-nowrap";
 }
 
 /* ==========================================================================
@@ -871,6 +871,27 @@ function redeemReward(codigoCupom, custoEmPontos, valorDoDesconto) {
    ETAPA 6 (DECISÃO DE IDENTIFICAÇÃO), PAGAMENTO E PONTUAÇÃO LGPD
    ========================================================================== */
 
+function limparDadosCartao() {
+    var numCartao = document.getElementById('card-number');
+    var valCartao = document.getElementById('card-expiry');
+    var cvvCartao = document.getElementById('card-cvv');
+
+    if (numCartao) numCartao.value = '';
+    if (valCartao) valCartao.value = '';
+    if (cvvCartao) cvvCartao.value = '';
+}
+
+function openPaymentModal() {
+    limparDadosCartao();
+    selectPayMethod('pix');
+    toggleModal('payment-modal');
+}
+
+function closePaymentModal() {
+    limparDadosCartao();
+    toggleModal('payment-modal');
+}
+
 function startCheckout() {
     if (carrinho.length === 0) {
         alert('Adicione ao menos um item ao carrinho.');
@@ -887,7 +908,7 @@ function startCheckout() {
         checkoutEmAndamento = true;
         toggleModal('id-decision-modal');
     } else {
-        toggleModal('payment-modal');
+        openPaymentModal();
     }
 }
 
@@ -900,7 +921,7 @@ function chooseIdentificationOption(desejaIdentificar) {
     } else {
         // Prossegue como convidado sem pontuação
         checkoutEmAndamento = false;
-        toggleModal('payment-modal');
+        openPaymentModal();
     }
 }
 
@@ -913,6 +934,9 @@ function selectPayMethod(metodo) {
     var btnPix = document.getElementById('pay-method-pix');
     var btnCard = document.getElementById('pay-method-card');
     var divDetalhes = document.getElementById('pay-details');
+
+    // Garante que nenhum dado de cartão anterior permaneça em memória/DOM
+    limparDadosCartao();
 
     // Esconde alerta de erro ao trocar o método de pagamento
     var errAlert = document.getElementById('payment-error-alert');
@@ -932,13 +956,13 @@ function selectPayMethod(metodo) {
         if (btnCard) btnCard.className = "border-2 border-blue-900 bg-slate-50 p-3 rounded-xl flex flex-col items-center justify-center text-xs font-bold text-gray-800 hover:bg-slate-100 transition";
         if (btnPix) btnPix.className = "border-2 border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center text-xs font-bold text-gray-800 hover:bg-slate-100 transition";
         if (divDetalhes) {
-            divDetalhes.innerHTML = '<div class="space-y-2 text-left">' +
-                '<input type="text" placeholder="Número do Cartão" value="4532 •••• •••• 8921" class="w-full border p-2 rounded text-xs">' +
+            divDetalhes.innerHTML = '<form autocomplete="off" onsubmit="return false;" class="space-y-2 text-left">' +
+                '<input type="text" id="card-number" name="cc_num_temp" autocomplete="off" inputmode="numeric" maxlength="19" placeholder="Número do Cartão" class="w-full border p-2 rounded text-xs">' +
                 '<div class="flex gap-2">' +
-                    '<input type="text" placeholder="Validade (MM/AA)" value="12/28" class="w-1/2 border p-2 rounded text-xs">' +
-                    '<input type="text" placeholder="CVV" value="882" class="w-1/2 border p-2 rounded text-xs">' +
+                    '<input type="text" id="card-expiry" name="cc_exp_temp" autocomplete="off" inputmode="numeric" maxlength="5" placeholder="Validade (MM/AA)" class="w-1/2 border p-2 rounded text-xs">' +
+                    '<input type="password" id="card-cvv" name="cc_cvv_temp" autocomplete="new-password" inputmode="numeric" maxlength="4" placeholder="CVV" class="w-1/2 border p-2 rounded text-xs">' +
                 '</div>' +
-            '</div>';
+            '</form>';
         }
     }
 }
@@ -964,7 +988,7 @@ function processSimulatedPayment() {
     
     setTimeout(function() {
         if (btn) btn.innerHTML = 'Confirmar Pagamento Simulado';
-        toggleModal('payment-modal');
+        closePaymentModal();
         
         var fidelidadeAtiva = isFidelidadePermitidaLGPD();
         var podePontuar = usuarioIdentificado && fidelidadeAtiva;
@@ -1081,7 +1105,7 @@ function loginUser() {
         // Se o cadastro/login foi acionado antes do pagamento, prossegue automaticamente para o gateway
         if (checkoutEmAndamento) {
             checkoutEmAndamento = false;
-            toggleModal('payment-modal');
+            openPaymentModal();
         }
     } else {
         alert("Por favor, informe seu nome completo.");
